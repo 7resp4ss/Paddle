@@ -50,6 +50,14 @@ void GatherTreeKernel(const Context &dev_ctx,
       out_data[idx] = ids_data[idx];
       auto parent = parents_data[idx];
       for (int64_t step = max_length - 2; step >= 0; step--) {
+        PADDLE_ENFORCE_GE(
+            parent,
+            0,
+            phi::errors::PreconditionNotMet(
+                  "The value of parent (%d) for c_split must be "
+                  "greater than or equal to 0.",
+                  parent));
+
         PADDLE_ENFORCE_LT(
             parent,
             beam_size,
@@ -58,7 +66,7 @@ void GatherTreeKernel(const Context &dev_ctx,
                 "parents %d is greater than or equal to beam size %d. ",
                 parent,
                 beam_size));
-
+        
         idx = step * batch_size * beam_size + batch * beam_size;
         out_data[idx + beam] = ids_data[idx + parent];
         parent = parents_data[idx + parent];
